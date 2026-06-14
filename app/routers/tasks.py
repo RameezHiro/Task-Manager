@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from typing import Optional
 from app.database import get_session
 from app.models import Task, User
-from app.schemas import TaskCreate, TaskResponse, TaskStatusUpdate
+from app.schemas import PriorityEnum, StatusEnum, TaskCreate, TaskResponse, TaskStatusUpdate
 from app.utils.auth import get_current_user
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
@@ -21,11 +22,20 @@ def create_task(
 
 @router.get("", response_model=list[TaskResponse])
 def get_tasks(
+    status: Optional[StatusEnum] = None,
+    priority: Optional[PriorityEnum] = None,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    tasks = session.exec(select(Task).where(Task.owner_id == current_user.id)).all()
-    return tasks
+    query = select(Task).where(Task.owner_id == current_user.id)
+    
+    if status is not None:
+        query = query.where(Task.status == status)
+    
+    if priority is not None:
+        query = query.where(Task.priority == priority)
+    
+    return session.exec(query).all()
 
 @router.get("/{task_id}", response_model=TaskResponse)
 def get_task(

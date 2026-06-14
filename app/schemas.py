@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 from datetime import datetime
 from enum import Enum
@@ -36,6 +36,13 @@ class TaskCreate(BaseModel):
     status: StatusEnum = StatusEnum.todo
     priority: PriorityEnum = PriorityEnum.medium
     due_date: Optional[datetime] = None
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Title cannot be empty or whitespace")
+        return value.strip()
 
 class TaskResponse(BaseModel):
     id: int
