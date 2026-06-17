@@ -4,7 +4,14 @@ from app.routers import auth, tasks
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
-app = FastAPI()
+app = FastAPI(
+    title="Task Manager API",
+    version="1.0.0",
+    servers=[
+        {"url": "http://127.0.0.1:8000", "description": "Local"},
+        {"url": "https://task-manager-f13j.onrender.com", "description": "Production"}
+    ]
+)
 
 app.include_router(auth.router)
 app.include_router(tasks.router)
